@@ -4,31 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>致同行伙伴的一封信</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- 
-      === 备用方案 ===
-      如果本地字体加载失败，会自动使用 Long Cang 作为替补，保证页面好看。
-    -->
-    <link href="https://fonts.googleapis.com/css2?family=Long+Cang&display=swap" rel="stylesheet">
+    <!-- 1. 使用 Tailwind CSS (通常国内可访问，如遇极慢情况建议下载到本地引用) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- 2. 将 Google Fonts 替换为国内镜像源 (fonts.loli.net)，大幅提升加载速度 -->
+    <link href="https://fonts.loli.net/css2?family=Long+Cang&display=swap" rel="stylesheet">
     
     <style>
         /* ============================================================
-           【核心设置】如何使用你的本地字体：
-           1. 把你的字体文件（如 pfsh.ttf）和这个 html 文件放在同一个文件夹里。
-           2. 修改下方 url('') 里的文件名。
+           【中国国内优化版配置】
+           
+           字体加载顺序策略：
+           1. 优先尝试本地文件 'PingFang ShaoHua' (平方韶华)
+           2. 其次尝试网络镜像字体 'Long Cang' (龙仓体)
+           3. 如果都失败，直接使用系统自带的 'KaiTi' (楷体) —— 保证任何电脑都能显示手写感
            ============================================================ */
         @font-face {
-            font-family: 'PingFang ShaoHua'; /* 自定义名字 */
-            
-            /* 请修改下面这一行：
-               假设你的字体文件名叫 "pfsh.ttf"，就写 url('pfsh.ttf')
-               如果是 "平方韶华.otf"，就写 url('平方韶华.otf')
-            */
+            font-family: 'PingFang ShaoHua';
+            /* 如果你有本地文件，请修改这里。例如: url('pfsh.ttf') */
             src: url('平方韶华体.ttf') format('truetype'),
-                 /* 下面是替补，如果找不到你的文件，就用网络字体 */
-                 url('https://fonts.gstatic.com/s/longcang/v15/LYjAdGvlkax9xDxZtp0lzrts.woff2') format('woff2');
-            
+                 url('https://gstatic.loli.net/s/longcang/v15/LYjAdGvlkax9xDxZtp0lzrts.woff2') format('woff2');
             font-weight: normal;
             font-style: normal;
         }
@@ -36,13 +32,18 @@
         body {
             margin: 0;
             overflow: hidden;
-            font-family: serif;
+            /* 基础字体使用宋体，更有书卷气 */
+            font-family: "Noto Serif SC", "Songti SC", "SimSun", serif;
         }
 
-        /* 使用自定义字体 */
+        /* 核心手写体样式 */
         .handwritten {
-            /* 优先尝试加载 'PingFang ShaoHua'，失败则退回到 'Long Cang' */
-            font-family: 'PingFang ShaoHua', 'Long Cang', cursive; 
+            font-family: 
+                'PingFang ShaoHua',   /* 1. 你的目标字体 */
+                'Long Cang',          /* 2. 网络手写体 */
+                'KaiTi', 'STKaiti',   /* 3. Windows/Mac 系统自带楷体 (最稳妥的备选) */
+                '楷体',                /* 4. 中文名兜底 */
+                cursive;
             font-weight: 400; 
             letter-spacing: 0.05em; 
         }
@@ -106,6 +107,7 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
+        /* Flaps */
         .flap {
             position: absolute;
             width: 0;
