@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>致同行伙伴的一封信</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 
+      === 备用方案 ===
+      如果本地字体加载失败，会自动使用 Long Cang 作为替补，保证页面好看。
+    -->
+    <link href="https://fonts.googleapis.com/css2?family=Long+Cang&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ============================================================
+           【核心设置】如何使用你的本地字体：
+           1. 把你的字体文件（如 pfsh.ttf）和这个 html 文件放在同一个文件夹里。
+           2. 修改下方 url('') 里的文件名。
+           ============================================================ */
+        @font-face {
+            font-family: 'PingFang ShaoHua'; /* 自定义名字 */
+            
+            /* 请修改下面这一行：
+               假设你的字体文件名叫 "pfsh.ttf"，就写 url('pfsh.ttf')
+               如果是 "平方韶华.otf"，就写 url('平方韶华.otf')
+            */
+            src: url('平方韶华体.ttf') format('truetype'),
+                 /* 下面是替补，如果找不到你的文件，就用网络字体 */
+                 url('https://fonts.gstatic.com/s/longcang/v15/LYjAdGvlkax9xDxZtp0lzrts.woff2') format('woff2');
+            
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: serif;
+        }
+
+        /* 使用自定义字体 */
+        .handwritten {
+            /* 优先尝试加载 'PingFang ShaoHua'，失败则退回到 'Long Cang' */
+            font-family: 'PingFang ShaoHua', 'Long Cang', cursive; 
+            font-weight: 400; 
+            letter-spacing: 0.05em; 
+        }
+
+        /* Custom Scrollbar */
+        .custom-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.01);
+            border-radius: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: rgba(85, 139, 47, 0.2); 
+            border-radius: 4px;
+        }
+
+        /* Envelope Styles */
+        .envelope-container {
+            perspective: 1000px;
+            cursor: pointer;
+            transition: transform 0.5s ease;
+        }
+        
+        .envelope-container:hover {
+            transform: scale(1.02);
+        }
+
+        .envelope {
+            position: relative;
+            width: 320px;
+            height: 220px;
+            background: #fdf6e3;
+            border-radius: 4px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            transform-style: preserve-3d;
+        }
+
+        .envelope::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #e6dac3;
+            border-radius: 4px;
+            z-index: 1;
+        }
+
+        .letter-preview {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            width: 280px;
+            height: 180px;
+            background: #fffdf7;
+            border-radius: 2px;
+            z-index: 2;
+            transition: transform 1s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .flap {
+            position: absolute;
+            width: 0;
+            height: 0;
+            z-index: 5;
+            border-style: solid;
+        }
+
+        .flap.left {
+            border-width: 110px 0 110px 160px;
+            border-color: transparent transparent transparent #f4ebd0;
+            top: 0;
+            left: 0;
+            border-radius: 4px 0 0 4px;
+        }
+
+        .flap.right {
+            border-width: 110px 160px 110px 0;
+            border-color: transparent #f4ebd0 transparent transparent;
+            top: 0;
+            right: 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .flap.bottom {
+            border-width: 0 160px 120px 160px;
+            border-color: transparent transparent #ebdcc1 transparent;
+            bottom: 0;
+            left: 0;
+            border-radius: 0 0 4px 4px;
+        }
+
+        .flap.top {
+            border-width: 120px 160px 0 160px;
+            border-color: #e3d2b4 transparent transparent transparent;
+            top: 0;
+            left: 0;
+            transform-origin: top;
+            transition: transform 0.6s ease-in-out, z-index 0.6s step-end;
+            z-index: 6;
+            border-radius: 4px 4px 0 0;
+        }
+
+        .seal {
+            position: absolute;
+            width: 36px;
+            height: 36px;
+            background: #c84b4b;
+            border-radius: 50%;
+            bottom: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255,255,255,0.7);
+            font-size: 18px;
+            font-family: serif;
+            border: 1px solid rgba(255,255,255,0.2);
+            z-index: 7;
+        }
+
+        .envelope.open .flap.top {
+            transform: rotateX(180deg);
+            z-index: 1;
+        }
+        
+        .envelope.open .letter-preview {
+            transform: translateY(-100px);
+            z-index: 4;
+        }
+
+        #reading-mode {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s ease;
+        }
+
+        #reading-mode.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .paper-texture {
+            background-color: #fffdf7;
+            background-image: linear-gradient(#f6f6f6 1px, transparent 1px);
+            background-size: 100% 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .fade-in-text {
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+        .fade-in-text.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50/60 to-green-50/60 min-h-screen relative text-gray-800">
+
+    <!-- Canvas Background -->
+    <canvas id="natureCanvas" class="fixed top-0 left-0 w-full h-full z-0 pointer-events-none"></canvas>
+
+    <!-- Intro Text -->
+    <div id="intro-text" class="fixed top-12 w-full text-center z-10 transition-opacity duration-500">
+        <p class="handwritten text-xl text-green-900/60 tracking-widest">有一封给你的信...</p>
+        <p class="text-[10px] text-gray-400 mt-2 font-light tracking-[0.2em] uppercase">点击开启</p>
+    </div>
+
+    <!-- Main Envelope Scene -->
+    <div id="envelope-scene" class="fixed inset-0 z-20 flex items-center justify-center transition-all duration-1000 ease-in-out">
+        <div class="envelope-container" onclick="openLetter()">
+            <div class="envelope" id="envelope">
+                <div class="flap top">
+                    <div class="seal">❤</div>
+                </div>
+                <div class="flap right"></div>
+                <div class="flap bottom"></div>
+                <div class="flap left"></div>
+                <div class="letter-preview"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reading Mode -->
+    <div id="reading-mode" class="fixed inset-0 z-30 flex items-center justify-center bg-white/50 backdrop-blur-sm p-4">
+        <!-- Letter Container -->
+        <div class="paper-texture w-full max-w-[520px] relative transform scale-95 transition-transform duration-1000 flex flex-col max-h-[80vh] shadow-xl rounded-sm" id="actual-letter">
+            
+            <!-- Decorative corners -->
+            <div class="absolute top-0 right-0 w-12 h-12 opacity-10 pointer-events-none overflow-hidden">
+                <div class="w-16 h-16 bg-green-500 rounded-full -mt-8 -mr-8"></div>
+            </div>
+            
+            <!-- Scrollable Content Area -->
+            <div class="overflow-y-auto custom-scroll p-8 md:p-12 flex-1">
+                <div class="handwritten text-sm md:text-base leading-loose text-gray-700 space-y-5">
+                    
+                    <div class="fade-in-text font-bold text-base md:text-lg text-gray-800 mb-6">
+                        TO：XXX
+                    </div>
+
+                    <div class="fade-in-text">
+                        我们想了很久该怎么跟你说声谢谢，<br>
+                        最后还是觉得，用一封正式的信，最真诚。
+                    </div>
+
+                    <div class="fade-in-text">
+                        不只是感谢你在茶话会里的真诚分享，<br>
+                        更想谢谢你这一路以来，对心野间的信任和陪伴。
+                    </div>
+
+                    <div class="fade-in-text">
+                        从一杯茶、一根香、一盒艾条的产品，<br>
+                        到后来一起在课程里学习探索、慢慢找到适合自己的人生节奏。<br>
+                        你一直很笃定地走在我们身边，<br>
+                        这份信任，对我们来说真的很珍贵。
+                    </div>
+
+                    <div class="fade-in-text">
+                        我们也很开心能一路看着你的变化——<br>
+                        从最初的迷茫和紧绷，到现在这样稳定、轻盈、松弛而有力量的状态。
+                    </div>
+
+                    <div class="fade-in-text">
+                        直播里你提到的那些改变，很真实，也特别能打动人。<br>
+                        谢谢你用自己的成长经历，让更多人看见——<br>
+                        原来，养护身心真的可以在日常里生根发芽，带来这么温柔又笃定的改变。
+                    </div>
+
+                    <div class="fade-in-text">
+                        对心野间来说，你不只是嘉宾，<br>
+                        更是一路同行、彼此懂得的同频伙伴。
+                    </div>
+
+                    <div class="fade-in-text">
+                        在这喧嚣的世界里，能遇见你并肩同行，是一件很美好的事。
+                    </div>
+
+                    <div class="fade-in-text pb-4 border-b border-gray-200/50">
+                        也期待接下来，我们继续一起，把这份安定与温柔，带给更多人。
+                    </div>
+
+                    <div class="fade-in-text text-right mt-6 pt-2">
+                        <span class="block text-base">心野间</span>
+                        <span class="block text-[10px] text-gray-400 mt-1 font-sans tracking-widest">敬上</span>
+                    </div>
+
+                    <!-- Replay Button -->
+                    <div class="mt-8 text-center fade-in-text delay-1000 pb-2">
+                        <button onclick="location.reload()" class="px-4 py-1 bg-stone-50 text-stone-500 border border-stone-200 rounded-full hover:bg-stone-100 transition-colors text-[10px] tracking-widest font-sans shadow-sm">
+                            再次打开
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Logic for Letter Interaction ---
+        
+        let isOpen = false;
+        const envelope = document.getElementById('envelope');
+        const envelopeScene = document.getElementById('envelope-scene');
+        const readingMode = document.getElementById('reading-mode');
+        const actualLetter = document.getElementById('actual-letter');
+        const introText = document.getElementById('intro-text');
+        
+        function openLetter() {
+            if (isOpen) return;
+            isOpen = true;
+            
+            // 1. Open Flap
+            envelope.classList.add('open');
+            
+            // 2. Hide Intro Text
+            introText.style.opacity = '0';
+
+            // 3. Transition to reading mode
+            setTimeout(() => {
+                envelopeScene.style.opacity = '0';
+                envelopeScene.style.transform = 'scale(1.5)';
+                envelopeScene.style.pointerEvents = 'none';
+
+                readingMode.classList.add('active');
+                actualLetter.style.transform = 'scale(1)';
+
+                revealText();
+            }, 1000);
+        }
+
+        function revealText() {
+            const paragraphs = document.querySelectorAll('.fade-in-text');
+            const delayBase = window.innerWidth < 768 ? 250 : 400;
+            
+            paragraphs.forEach((p, index) => {
+                setTimeout(() => {
+                    p.classList.add('visible');
+                    // Gentle auto-scroll
+                    if (index > 2) { 
+                        p.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                }, 300 + (index * delayBase)); 
+            });
+        }
+
+        // --- Nature Canvas Background ---
+        
+        const canvas = document.getElementById('natureCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let width, height;
+        let grasses = [];
+        let flowers = [];
+        let time = 0;
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            initNature();
+        }
+
+        window.addEventListener('resize', resize);
+
+        class Grass {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = height;
+                this.height = Math.random() * 80 + 40; 
+                this.angle = Math.random() * Math.PI / 4 - Math.PI / 8;
+                this.color = `hsl(${85 + Math.random() * 30}, ${30 + Math.random() * 20}%, ${30 + Math.random() * 15}%)`; 
+                this.curve = Math.random() * 20;
+            }
+
+            draw(ctx, time) {
+                const sway = Math.sin(time * 0.0015 + this.x * 0.01) * 15;
+                
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.quadraticCurveTo(
+                    this.x + sway / 2, 
+                    this.y - this.height / 2, 
+                    this.x + sway + this.curve, 
+                    this.y - this.height
+                );
+                
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = 1.5; 
+                ctx.lineCap = 'round';
+                ctx.stroke();
+            }
+        }
+
+        class Flower {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = height - (Math.random() * 60); 
+                this.size = Math.random() * 2 + 1.5; 
+                this.color = `hsl(${Math.random() * 40 + 340}, 60%, 75%)`; 
+                this.swayOffset = Math.random() * 100;
+                this.stemHeight = Math.random() * 30 + 15;
+            }
+
+            draw(ctx, time) {
+                const sway = Math.sin(time * 0.002 + this.swayOffset) * 8;
+                
+                // Stem
+                ctx.beginPath();
+                ctx.moveTo(this.x, height);
+                ctx.quadraticCurveTo(this.x + sway/2, height - this.stemHeight/2, this.x + sway, height - this.stemHeight);
+                ctx.strokeStyle = '#6d8c56';
+                ctx.lineWidth = 0.8;
+                ctx.stroke();
+
+                // Petals
+                ctx.beginPath();
+                ctx.arc(this.x + sway, height - this.stemHeight, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                
+                // Center
+                ctx.beginPath();
+                ctx.arc(this.x + sway, height - this.stemHeight, this.size/2, 0, Math.PI * 2);
+                ctx.fillStyle = '#fff';
+                ctx.fill();
+            }
+        }
+
+        function initNature() {
+            grasses = [];
+            flowers = [];
+            
+            const density = Math.floor(width / 4); 
+            for(let i=0; i<density; i++) {
+                grasses.push(new Grass());
+            }
+
+            const flowerCount = Math.floor(width / 25);
+            for(let i=0; i<flowerCount; i++) {
+                flowers.push(new Flower());
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            time += 16; 
+
+            const gradient = ctx.createLinearGradient(0, height - 100, 0, height);
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 0)');
+            gradient.addColorStop(1, 'rgba(180, 209, 166, 0.3)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, height - 100, width, 100);
+
+            grasses.forEach(g => g.draw(ctx, time));
+            flowers.forEach(f => f.draw(ctx, time));
+
+            requestAnimationFrame(animate);
+        }
+
+        resize();
+        animate();
+    </script>
+</body>
+</html>
